@@ -31,3 +31,6 @@ def greeting_add():
         abort(422)
     greetings[info['lang']] = info['greeting']
     return jsonify({'greetings':greetings})
+
+if __name__ == '__main__':
+  app.run(debug=True)
