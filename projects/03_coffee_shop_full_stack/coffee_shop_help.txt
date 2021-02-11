@@ -1,0 +1,8 @@
+Backend:
+export FLASK_APP=api.py
+flask run --reload
+
+Frontend:
+npm install -g @ionic/cli
+npm start
+ionic serve
