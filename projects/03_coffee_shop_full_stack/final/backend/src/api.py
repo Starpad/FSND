@@ -16,7 +16,7 @@ CORS(app)
 !! NOTE THIS WILL DROP ALL RECORDS AND START YOUR DB FROM SCRATCH
 !! NOTE THIS MUST BE UNCOMMENTED ON FIRST RUN
 '''
-# db_drop_and_create_all()
+db_drop_and_create_all()
 
 ## ROUTES
 '''
@@ -27,7 +27,18 @@ CORS(app)
     returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
         or appropriate status code indicating reason for failure
 '''
+@app.route('/drinks', methods=['GET'])
+def get_drinks():
+    try:
+        drinks_selection = Drink.query.order_by(Drink.id).all()
+        drinks = [drink.short() for drink in drinks_selection]
 
+        return jsonify({
+            'success': True,
+            'drinks': drinks
+        })
+    except:
+        abort(400)
 
 '''
 @TODO implement endpoint
@@ -37,7 +48,19 @@ CORS(app)
     returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
         or appropriate status code indicating reason for failure
 '''
+@app.route('/drinks-detail', methods=['GET'])
+@requires_auth('get:drinks-detail')
+def get_drinks_details():
+    try:
+        drinks_selection = Drink.query.order_by(Drink.id).all()
+        drinks = [drink.long() for drink in drinks_selection]
 
+        return jsonify({
+            'success': True,
+            'drinks': drinks
+        })
+    except:
+        abort(400)
 
 '''
 @TODO implement endpoint
@@ -48,6 +71,33 @@ CORS(app)
     returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the newly created drink
         or appropriate status code indicating reason for failure
 '''
+@app.route('/drinks', methods=['POST'])
+@requires_auth('post:drinks')
+def post_drink():
+    body = request.get_json()
+    titel = body['titel']
+    recipe = body['recipe']
+
+    if titel is None:
+        abort(422)
+
+    if recipe is None:
+        abort(422)
+
+    try:
+
+        new_drink = Drink(titel=titel, recipe=recipe)
+
+        new_drink.insert()
+
+        return jsonify({
+            'success': True,
+            'drinks': [new_drink.long()]
+        })
+
+    except Exception as e:
+        print(e)
+        abort(422)
 
 
 '''
