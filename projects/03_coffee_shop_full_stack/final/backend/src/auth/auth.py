@@ -9,6 +9,14 @@ AUTH0_DOMAIN = 'starpad.eu.auth0.com'
 ALGORITHMS = ['RS256']
 API_AUDIENCE = 'http://localhost:5000'
 
+CORS(app,resources={r"*": {"origins": "*"}})
+  # CORS Headers 
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,true')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,PATCH')
+    return response
+
 ## AuthError Exception
 '''
 AuthError Exception
