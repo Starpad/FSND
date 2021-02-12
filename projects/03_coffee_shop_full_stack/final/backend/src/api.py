@@ -33,7 +33,7 @@ db_drop_and_create_all()
 @app.route('/drinks', methods=['GET'])
 def get_drinks():
     try:
-        drinks_selection = Drink.query.order_by(Drink.id).all()
+        drinks_selection = Drink.query.all()
         drinks = [drink.short() for drink in drinks_selection]
 
         return jsonify({
@@ -118,7 +118,7 @@ def post_drink():
         or appropriate status code indicating reason for failure
 '''
 
-@app.route('/drinks', methods=['PATCH'])
+@app.route('/drinks/<int:drink_id>', methods=['PATCH'])
 @requires_auth('patch:drinks')
 def patch_drinks(paylod, drink_id):
     body = request.get_json()
@@ -162,7 +162,7 @@ def patch_drinks(paylod, drink_id):
     returns status code 200 and json {"success": True, "delete": id} where id is the id of the deleted record
         or appropriate status code indicating reason for failure
 '''
-@app.route('/drinks', methods=['DELETE'])
+@app.route('/drinks/<int:drink_id>', methods=['DELETE'])
 @requires_auth('delete:drinks')
 def delete_drink(payload, drink_id):
     body = request.get_json()
@@ -246,3 +246,9 @@ def server_error(error):
 @TODO implement error handler for AuthError
     error handler should conform to general task above 
 '''
+
+@app.errorhandler(AuthError)
+def handle_auth_error(ex):
+    response = jsonify(ex.error)
+    response.status_code = ex.status_code
+    return response
