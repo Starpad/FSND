@@ -1,23 +1,20 @@
 import os
 from flask import Flask, request, jsonify, abort
 from sqlalchemy import exc
+from flask_sqlalchemy import SQLAlchemy
 import json
 from flask_cors import CORS
 
 from .database.models import db_drop_and_create_all, setup_db, Drink
 from .auth.auth import AuthError, requires_auth
 
+
+
 app = Flask(__name__)
 setup_db(app)
 CORS(app)
 
-CORS(app,resources={r"*": {"origins": "*"}})
-
-@app.after_request
-def after_request(response):
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,true')
-    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,PATCH')
-    return response
+# cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 '''
 @TODO uncomment the following line to initialize the datbase
@@ -25,6 +22,13 @@ def after_request(response):
 !! NOTE THIS MUST BE UNCOMMENTED ON FIRST RUN
 '''
 db_drop_and_create_all()
+
+# @app.after_request
+# def after_request(response):
+#     response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,true')
+#     response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+#     return response
+
 
 # ROUTES
 '''
