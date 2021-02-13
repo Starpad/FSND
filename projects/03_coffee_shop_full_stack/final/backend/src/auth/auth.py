@@ -32,8 +32,8 @@ class AuthError(Exception):
     return the token part of the header
 '''
 def get_token_auth_header():
-   # raise Exception('Not Implemented')
-   # function to get the token from the Authorization header, error if no bearer token
+    # raise Exception('Not Implemented')
+    # function to get the token from the Authorization header, error if no bearer token
 
     auth = request.headers.get('Authorization', None)
     if not auth:
