@@ -9,8 +9,7 @@ from .database.models import db_drop_and_create_all, setup_db, Drink
 from .auth.auth import AuthError, requires_auth
 
 
-
-app = Flask(__name__)
+app = Flask(__name__, instance_relative_config=True)
 setup_db(app)
 CORS(app)
 
@@ -23,11 +22,11 @@ CORS(app)
 '''
 db_drop_and_create_all()
 
-# @app.after_request
-# def after_request(response):
-#     response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,true')
-#     response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
-#     return response
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,true')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PATCH,POST,DELETE,OPTIONS')
+    return response
 
 
 # ROUTES
@@ -43,6 +42,7 @@ db_drop_and_create_all()
 # Get Endpoint for receiving short infos about the drinks
 
 @app.route('/drinks', methods=['GET'])
+@cross_origin()
 def get_drinks():
     try:
         drinks_selection = Drink.query.all()
@@ -65,6 +65,7 @@ def get_drinks():
 '''
 # Get Endpoint for receiving long infos about the drinks (details)
 @app.route('/drinks-detail', methods=['GET'])
+@cross_origin()
 @requires_auth('get:drinks-detail')
 def get_drinks_details():
     try:
@@ -89,6 +90,7 @@ def get_drinks_details():
 '''
 # Post Endpoint for creating a new drink
 @app.route('/drinks', methods=['POST'])
+@cross_origin()
 @requires_auth('post:drinks')
 def post_drink():
     body = request.get_json()
@@ -131,6 +133,7 @@ def post_drink():
 '''
 
 @app.route('/drinks/<int:drink_id>', methods=['PATCH'])
+@cross_origin()
 @requires_auth('patch:drinks')
 def patch_drinks(paylod, drink_id):
     body = request.get_json()
@@ -175,6 +178,7 @@ def patch_drinks(paylod, drink_id):
         or appropriate status code indicating reason for failure
 '''
 @app.route('/drinks/<int:drink_id>', methods=['DELETE'])
+@cross_origin()
 @requires_auth('delete:drinks')
 def delete_drink(payload, drink_id):
     body = request.get_json()
