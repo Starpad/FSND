@@ -9,11 +9,11 @@ from .database.models import db_drop_and_create_all, setup_db, Drink
 from .auth.auth import AuthError, requires_auth
 
 
-app = Flask(__name__, instance_relative_config=True)
+app = Flask(__name__)
 setup_db(app)
-CORS(app)
+# CORS(app)
 
-# cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
+cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 '''
 @TODO uncomment the following line to initialize the datbase
@@ -26,6 +26,7 @@ db_drop_and_create_all()
 def after_request(response):
     response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,true')
     response.headers.add('Access-Control-Allow-Methods', 'GET,PATCH,POST,DELETE,OPTIONS')
+    response.headers.add('Access-Control-Allow-Origin', '*')
     return response
 
 
@@ -42,7 +43,6 @@ def after_request(response):
 # Get Endpoint for receiving short infos about the drinks
 
 @app.route('/drinks', methods=['GET'])
-@cross_origin()
 def get_drinks():
     try:
         drinks_selection = Drink.query.all()
@@ -65,9 +65,8 @@ def get_drinks():
 '''
 # Get Endpoint for receiving long infos about the drinks (details)
 @app.route('/drinks-detail', methods=['GET'])
-@cross_origin()
 @requires_auth('get:drinks-detail')
-def get_drinks_details():
+def get_drinks_details(payload):
     try:
         drinks_selection = Drink.query.order_by(Drink.id).all()
         drinks = [drink.long() for drink in drinks_selection]
@@ -90,23 +89,22 @@ def get_drinks_details():
 '''
 # Post Endpoint for creating a new drink
 @app.route('/drinks', methods=['POST'])
-@cross_origin()
 @requires_auth('post:drinks')
-def post_drink():
+def post_drink(payload):
     body = request.get_json()
-    titel = body['titel']
-    recipe = body['recipe']
+    title = body['title']
+    recipe = json.dumps(body['recipe'])
 
     # if there is no title or recipe -> abort
-    if titel is None:
+    if 'title' not in body:
         abort(422)
 
-    if recipe is None:
+    if 'recipe' not in body:
         abort(422)
 
     try:
 
-        new_drink = Drink(titel=titel, recipe=recipe)
+        new_drink = Drink(title=title, recipe=recipe)
 
         new_drink.insert()
 
@@ -133,38 +131,30 @@ def post_drink():
 '''
 
 @app.route('/drinks/<int:drink_id>', methods=['PATCH'])
-@cross_origin()
 @requires_auth('patch:drinks')
 def patch_drinks(paylod, drink_id):
     body = request.get_json()
-    titel = body['titel']
-    recipe = body['recipe']
+    selected_drink = Drink.query.filter(Drink.id == drink_id).one_or_none()
 
-    if drink_id is None:
+    if selected_drink is None:
         abort(404)
 
-    try:
-        selected_drink = Drink.query.filter_by(id=drink_id).one_or_none()
-        # if there is no title or recipe -> abort, else update the information
-        if titel is None:
-            abort(400)
 
-        if recipe is None:
-            abort(400)
+    # if there is no title or recipe -> abort, else update the information
+    if 'title' in body:
+        selected_drink.title = body['title']
 
-        selected_drink.title = titel
-        selected_drink.recipe = json.dumps(recipe)
-        
-        selected_drink.update()
-        
-        return jsonify({
-            'success': True,
-            'drinks': [selected_drink.long()]
-        }), 200
+    if 'recipe' in body:
+        selected_drink.recipe = json.dumps(body['recipe'])
+    
+    selected_drink.update()
+    
+    return jsonify({
+        'success': True,
+        'drinks': [selected_drink.long()]
+    }), 200
 
-    except Exception as e:
-        print(e)
-        abort(422)
+
 
 
 '''
@@ -178,33 +168,26 @@ def patch_drinks(paylod, drink_id):
         or appropriate status code indicating reason for failure
 '''
 @app.route('/drinks/<int:drink_id>', methods=['DELETE'])
-@cross_origin()
 @requires_auth('delete:drinks')
 def delete_drink(payload, drink_id):
-    body = request.get_json()
+
+    delete_drink = Drink.query.get(drink_id)
 
     # if there is no title or recipe -> abort
-    if body is None:
+    if delete_drink is None:
         abort(422)
 
-    try:
-        
-        if drink_id is None:
-            abort(404)
-        
-        delete_drink = Drink.query.filter_by(id=drink_id).one_or_none()
+    if drink_id is None:
+        abort(404)
 
-        delete_drink.delete()
+    delete_drink.delete()
+
+    return jsonify({
+        'success': True,
+        'delete': drink_id
+    }), 200
 
 
-        return jsonify({
-            'success': True,
-            'delete': drink_id
-        }), 200
-
-    except Exception as e:
-        print(e)
-        abort(422)
 
 ## Error Handling
 '''
@@ -224,7 +207,7 @@ Example error handling for unprocessable entity
 @TODO implement error handler for 404
     error handler should conform to general task above 
 '''
-# Implemented error handlers for 400, 404, 422, 500
+# Implemented error handlers
 @app.errorhandler(400)
 def bad_request(error):
     return jsonify({
@@ -232,6 +215,14 @@ def bad_request(error):
                     "error": 400,
                     "message": "bad request"
                     }), 400
+
+@app.errorhandler(401)
+def unauthorized(error):
+    return jsonify({
+        "success": False,
+        "error": 401,
+        "message": "unauthorized"
+    }), 401
 
 @app.errorhandler(404)
 def not_found(error):
