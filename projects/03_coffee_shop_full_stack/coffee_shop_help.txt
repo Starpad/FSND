@@ -2,7 +2,19 @@ Backend:
 export FLASK_APP=api.py
 flask run --reload
 
+export FLASK_APP=api.py && export FLASK_ENV=development && flask run --reload
+
 Frontend:
 npm install -g @ionic/cli
 npm start
 ionic serve
+
+pycodestyle api.py
+
+
+App URL:
+https://starpad.eu.auth0.com/authorize?audience=http://localhost:5000&response_type=token&client_id=cWiUlViq1Dx48z50Jg1eM60rx5W317cd&redirect_uri=http://localhost:8100
+
+
+Token
+eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IkRrM21iVlFWUEloZUpRdEFLOTVkRCJ9.eyJpc3MiOiJodHRwczovL3N0YXJwYWQuZXUuYXV0aDAuY29tLyIsInN1YiI6ImF1dGgwfDYwMTgyMDhjNTIzOGZiMDA2OTYzNTRhOCIsImF1ZCI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTAwMCIsImlhdCI6MTYxMzE0MzkyMCwiZXhwIjoxNjEzMTUxMTIwLCJhenAiOiJjV2lVbFZpcTFEeDQ4ejUwSmcxZU02MHJ4NVczMTdjZCIsInNjb3BlIjoiIiwicGVybWlzc2lvbnMiOlsiZ2V0OmRyaW5rcy1kZXRhaWwiXX0.SvXLKdw12KJC8CV52WXxC_aVN4Y-a6azAwywVgKC9il6naK5tRXWFxQaq0uGFavuCKX_GwmLLdQnvRFhrWvH0w8-lW8jArFKL6YW79GCMlRA9t9hJZlN7VPmXrPgBuMd27mQDWsJQn7ix3GzhNP_ZHDw9n3wDs3srASjUJJdrFWwJl72Fdhf632LOVklFAt3aaIbyhTilr1w979N0GFvtKYPebcGEwx68LJMX3j8mEx4dUvGl9l27CKqNtFjCUxNc-dsVHyuvkUExijghU-vGSkuWOceK0o0TsZbv9NQEeFtgc75-G8v1epfRGPpJniBh8G5F3l2dCVU8nub-DUsHQ
